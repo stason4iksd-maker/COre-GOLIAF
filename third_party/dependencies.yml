@@ -1,0 +1,13 @@
+engine:
+  name: Core GOLIAF Engine
+  selected_license: MIT
+
+dependencies:
+  - name: SDL2
+    version: "2.30.x"
+  - name: OpenAL Soft
+    version: "1.23.x"
+  - name: stb
+    version: "latest"
+  - name: libogg
+    version: "1.3.x"
