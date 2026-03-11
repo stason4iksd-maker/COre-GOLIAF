@@ -1,95 +1,61 @@
 # COre-GOLIAF
 
-Минимальный рабочий каркас кроссплатформенного C++17 проекта 3D-движка с тремя целями сборки:
+Минимальный рабочий каркас 3D-движка на C++17/CMake с тремя целями:
 
-- `Dev` — среда разработки (runtime + инструменты редактора/компиляции ассетов)
-- `Player` — standalone runtime
-- `LanServer` — облегчённый LAN-сервер (stub)
+- **Dev** — development tools (уровневый редактор, asset pipeline, debug tools) как расширяемые stubs
+- **Player** — standalone runtime
+- **LanServer** — простой LAN server stub
 
-## Требования
+## Рабочая структура
 
-- CMake 3.20+
-- Компилятор C++17
-- Visual Studio 2022 (для Windows)
+```text
+COre-GOLIAF/
+├─ src/
+│  ├ dev_main.cpp
+│  ├ player_main.cpp
+│  └ server_main.cpp
+├─ assets/
+├─ engine/
+│  ├ renderer/
+│  ├ physics/
+│  └ audio/
+└─ CMakeLists.txt
+```
 
-## Сборка (Visual Studio 2022)
+## Сборка (Ninja)
+
+```bash
+cmake -S . -B build -G Ninja
+cmake --build build
+```
+
+## Сборка (Visual Studio / MSVC)
+
+Для Visual Studio 2026 используйте соответствующий установленный генератор CMake. Если доступен только Visual Studio 2022, можно использовать его генератор.
 
 ```bash
 cmake -S . -B build -G "Visual Studio 17 2022"
 cmake --build build --config Debug
 ```
 
-Исполняемые файлы будут в каталоге:
+## Ninja + MSVC на Windows
+
+Если хотите именно Ninja + MSVC, запускайте команды из **x64 Native Tools Command Prompt for VS** (или после `vcvars64.bat`). Тогда CMake автоматически подхватит MSVC.
+
+## Бинарники
+
+После сборки все exe находятся в:
 
 - `build/bin/Dev.exe`
 - `build/bin/Player.exe`
 - `build/bin/LanServer.exe`
 
-## Сборка (Linux/macOS)
+## Проверка запуска
 
-```bash
-cmake -S . -B build -DCMAKE_BUILD_TYPE=Debug
-cmake --build build -j
-```
+Каждый exe сразу печатает сообщение в консоль:
 
-## Структура проекта
+- Dev: `Dev build started`
+- Player: `Player build started`
+- LanServer: `LAN server started`
 
-```text
-.
-├── CMakeLists.txt
-├── assets/
-├── audio/
-├── ecs/
-├── editor/
-│   ├── level_editor/
-│   └── menu_editor/
-├── engine/
-├── physics/
-├── player/
-├── render/
-├── server/
-├── include/core/
-└── src/
-    ├── audio/
-    ├── dev/
-    ├── ecs/
-    ├── editor/
-    │   ├── level_editor/
-    │   └── menu_editor/
-    ├── engine/
-    ├── physics/
-    ├── player/
-    ├── render/
-    ├── server/
-    └── tools/
-```
-
-## Что уже реализовано
-
-- Валидный `CMakeLists.txt` с таргетами `Dev`, `Player`, `LanServer`
-- Общая библиотека `engine_core`
-- Минимальные примеры исходников, которые успешно компилируются
-```powershell
-# Windows (PowerShell)
-cmake -S . -B build -G "Visual Studio 17 2022"
-cmake --build build --config Debug
-```
-
-> Пока эти команды приведены как шаблон будущей установки.
-
----
-
-## 📁 Текущая структура
-```text
-.
-├── .gitkeep
-└── README.md
-```
-
-## ❓ Частые вопросы
-
-**Почему установка такая короткая?**  
-Потому что проект пока на начальном этапе и ещё не содержит исходников/зависимостей.
-
-**Что дальше?**  
-Добавить CMake-проект, исходники (`src/`), зависимости и CI.
+и ждёт Enter, чтобы окно не закрывалось мгновенно.
