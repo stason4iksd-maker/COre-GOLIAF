@@ -1,0 +1,8 @@
+NOTICE
+======
+
+This product includes third-party software components.
+Generated from `third_party/licenses_registry.yml`.
+
+Third-party components:
+{{COMPONENT_LIST}}
