@@ -1,0 +1,70 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  checks:
+    name: ${{ matrix.os }} / ${{ matrix.target }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+        target: [Dev, Player, Server]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Run automated checks
+        run: |
+          python ci/run_checks.py \
+            --target "${{ matrix.target }}" \
+            --os "${{ matrix.os }}" \
+            --output "reports/checks-${{ matrix.os }}-${{ matrix.target }}.json"
+
+      - name: LAN replayable integration test
+        if: matrix.target == 'Server'
+        run: |
+          python ci/replay_test.py \
+            --seed 424242 \
+            --ticks 300 \
+            --max-desync 0 \
+            --output "reports/replay-${{ matrix.os }}-${{ matrix.target }}.json"
+
+      - name: Performance budget gates
+        run: |
+          python ci/perf_check.py \
+            --budgets ci/perf_budgets.json \
+            --output "reports/perf-${{ matrix.os }}-${{ matrix.target }}.json"
+
+      - name: Build coverage report
+        run: |
+          python ci/coverage_stub.py \
+            --target "${{ matrix.target }}" \
+            --output "reports/coverage-${{ matrix.os }}-${{ matrix.target }}.json"
+
+      - name: Build performance trend report
+        run: |
+          python ci/perf_trend.py \
+            --perf-input "reports/perf-${{ matrix.os }}-${{ matrix.target }}.json" \
+            --output "reports/perf-trend-${{ matrix.os }}-${{ matrix.target }}.json"
+
+      - name: Upload artifacts and reports
+        uses: actions/upload-artifact@v4
+        with:
+          name: artifacts-${{ matrix.os }}-${{ matrix.target }}
+          path: |
+            reports/checks-${{ matrix.os }}-${{ matrix.target }}.json
+            reports/replay-${{ matrix.os }}-${{ matrix.target }}.json
+            reports/perf-${{ matrix.os }}-${{ matrix.target }}.json
+            reports/coverage-${{ matrix.os }}-${{ matrix.target }}.json
+            reports/perf-trend-${{ matrix.os }}-${{ matrix.target }}.json
+          if-no-files-found: warn
