@@ -13,7 +13,7 @@ public:
     void Update(Registry& registry, float dt);
 };
 
-class PhysicsSystem {
+class PhysicsStubSystem {
 public:
     void Update(Registry& registry, float dt);
 };

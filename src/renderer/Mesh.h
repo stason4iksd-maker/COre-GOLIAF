@@ -4,13 +4,12 @@ namespace goliaf::renderer {
 
 class Mesh {
 public:
-    bool CreateCube();
+    bool CreateTriangle();
     void Draw() const;
     ~Mesh();
 private:
     unsigned int vao_ = 0;
     unsigned int vbo_ = 0;
-    int vertexCount_ = 0;
 };
 
 }

@@ -1,47 +1,61 @@
 # COre-GOLIAF
 
-COre-GOLIAF is a modular C++17 game engine foundation with:
-- real OpenGL 3.3 rendering (cube)
-- GLFW window + input
-- Dear ImGui editor UI
-- ECS + scene JSON serialization
-- Lua scripting with hot-reload
-- TCP LAN server/client transform sync baseline
+Минимальный рабочий каркас 3D-движка на C++17/CMake с тремя целями:
 
-## Build
+- **Dev** — development tools (уровневый редактор, asset pipeline, debug tools) как расширяемые stubs
+- **Player** — standalone runtime
+- **LanServer** — простой LAN server stub
+
+## Рабочая структура
+
+```text
+COre-GOLIAF/
+├─ src/
+│  ├ dev_main.cpp
+│  ├ player_main.cpp
+│  └ server_main.cpp
+├─ assets/
+├─ engine/
+│  ├ renderer/
+│  ├ physics/
+│  └ audio/
+└─ CMakeLists.txt
+```
+
+## Сборка (Ninja)
 
 ```bash
 cmake -S . -B build -G Ninja
 cmake --build build
 ```
 
-## Outputs
+## Сборка (Visual Studio / MSVC)
 
-- `build/bin/Dev`
-- `build/bin/Player`
-- `build/bin/LanServer`
-
-## Run
+Для Visual Studio 2026 используйте соответствующий установленный генератор CMake. Если доступен только Visual Studio 2022, можно использовать его генератор.
 
 ```bash
-./build/bin/LanServer
-./build/bin/Player
-./build/bin/Dev
+cmake -S . -B build -G "Visual Studio 17 2022"
+cmake --build build --config Debug
 ```
 
-## Architecture
+## Ninja + MSVC на Windows
 
-- `src/core`: Application, WindowGLFW, Logger, Timer, Input
-- `src/renderer`: Renderer, Shader, Mesh, Camera
-- `src/ecs`: Entity/Component/Registry/Systems
-- `src/scene`: Scene + SceneSerializer
-- `src/scripting`: LuaVM
-- `src/network`: TcpServer + NetworkClient
-- `src/editor`: EditorApp + ImGuiIntegration
-- `src/apps`: dev_main, player_main, server_main
+Если хотите именно Ninja + MSVC, запускайте команды из **x64 Native Tools Command Prompt for VS** (или после `vcvars64.bat`). Тогда CMake автоматически подхватит MSVC.
 
-## Notes
+## Бинарники
 
-- Dev renders scene and editor panels (menu/hierarchy/inspector/assets/viewport panel).
-- Player renders loaded scene and updates camera with WASD/mouse.
-- LanServer listens on `127.0.0.1:12345`, accepts multiple clients and responds with snapshots.
+После сборки все exe находятся в:
+
+- `build/bin/Dev.exe`
+- `build/bin/Player.exe`
+- `build/bin/LanServer.exe`
+
+## Проверка запуска
+
+Каждый exe сразу печатает сообщение в консоль:
+
+- Dev: `Dev build started`
+- Player: `Player build started`
+- LanServer: `LAN server started`
+
+и ждёт Enter, чтобы окно не закрывалось мгновенно.

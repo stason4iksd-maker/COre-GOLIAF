@@ -21,7 +21,7 @@ bool Renderer::Initialize(GLFWwindow* window, const char* shaderBasePath) {
     if (!shader_.LoadFromFiles(base + "/simple.vert", base + "/simple.frag")) {
         return false;
     }
-    mesh_.CreateCube();
+    mesh_.CreateTriangle();
     core::Logger::Log("Renderer", "OpenGL initialized");
     return true;
 }
@@ -32,11 +32,8 @@ void Renderer::BeginFrame(float r, float g, float b, float a) const {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
 
-void Renderer::RenderCube(const glm::mat4& model, const glm::mat4& view, const glm::mat4& projection) {
+void Renderer::RenderTriangle() {
     shader_.Use();
-    shader_.SetMat4("uModel", model);
-    shader_.SetMat4("uView", view);
-    shader_.SetMat4("uProj", projection);
     mesh_.Draw();
     core::Logger::Log("Renderer", "Rendering frame");
 }

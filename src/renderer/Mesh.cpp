@@ -1,47 +1,32 @@
 #include "renderer/Mesh.h"
+#include "core/Logger.h"
 #include <GL/glew.h>
 
 namespace goliaf::renderer {
 
-bool Mesh::CreateCube() {
-    // position + color
-    static const float v[] = {
-        // back
-        -0.5f,-0.5f,-0.5f, 1,0,0,   0.5f,0.5f,-0.5f, 1,0,0,   0.5f,-0.5f,-0.5f, 1,0,0,
-        -0.5f,-0.5f,-0.5f, 1,0,0,  -0.5f,0.5f,-0.5f, 1,0,0,   0.5f,0.5f,-0.5f, 1,0,0,
-        // front
-        -0.5f,-0.5f,0.5f, 0,1,0,   0.5f,-0.5f,0.5f, 0,1,0,   0.5f,0.5f,0.5f, 0,1,0,
-        -0.5f,-0.5f,0.5f, 0,1,0,   0.5f,0.5f,0.5f, 0,1,0,   -0.5f,0.5f,0.5f, 0,1,0,
-        // left
-        -0.5f,0.5f,0.5f, 0,0,1,   -0.5f,0.5f,-0.5f, 0,0,1,  -0.5f,-0.5f,-0.5f, 0,0,1,
-        -0.5f,0.5f,0.5f, 0,0,1,   -0.5f,-0.5f,-0.5f, 0,0,1, -0.5f,-0.5f,0.5f, 0,0,1,
-        // right
-        0.5f,0.5f,0.5f, 1,1,0,   0.5f,-0.5f,-0.5f, 1,1,0,   0.5f,0.5f,-0.5f, 1,1,0,
-        0.5f,0.5f,0.5f, 1,1,0,   0.5f,-0.5f,0.5f, 1,1,0,   0.5f,-0.5f,-0.5f, 1,1,0,
-        // bottom
-        -0.5f,-0.5f,-0.5f, 1,0,1,  0.5f,-0.5f,-0.5f, 1,0,1, 0.5f,-0.5f,0.5f, 1,0,1,
-        -0.5f,-0.5f,-0.5f, 1,0,1,  0.5f,-0.5f,0.5f, 1,0,1, -0.5f,-0.5f,0.5f, 1,0,1,
-        // top
-        -0.5f,0.5f,-0.5f, 0,1,1,  0.5f,0.5f,0.5f, 0,1,1,   0.5f,0.5f,-0.5f, 0,1,1,
-        -0.5f,0.5f,-0.5f, 0,1,1, -0.5f,0.5f,0.5f, 0,1,1,   0.5f,0.5f,0.5f, 0,1,1,
+bool Mesh::CreateTriangle() {
+    static const float vertices[] = {
+         0.0f,  0.5f, 0.0f,
+        -0.5f, -0.5f, 0.0f,
+         0.5f, -0.5f, 0.0f,
     };
-    vertexCount_ = 36;
+
     glGenVertexArrays(1, &vao_);
     glGenBuffers(1, &vbo_);
     glBindVertexArray(vao_);
     glBindBuffer(GL_ARRAY_BUFFER, vbo_);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(v), v, GL_STATIC_DRAW);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), reinterpret_cast<void*>(0));
     glEnableVertexAttribArray(0);
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float)));
-    glEnableVertexAttribArray(1);
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindVertexArray(0);
+    core::Logger::Log("Renderer", "Triangle mesh created");
     return true;
 }
 
 void Mesh::Draw() const {
     glBindVertexArray(vao_);
-    glDrawArrays(GL_TRIANGLES, 0, vertexCount_);
+    glDrawArrays(GL_TRIANGLES, 0, 3);
     glBindVertexArray(0);
 }
 

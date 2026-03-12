@@ -12,7 +12,7 @@ void ScriptSystem::Update(Registry& registry, float dt) {
     (void)dt;
 }
 
-void PhysicsSystem::Update(Registry& registry, float dt) {
+void PhysicsStubSystem::Update(Registry& registry, float dt) {
     registry.ForEachTransform([dt](Entity, Transform& t) {
         t.y += 0.0f * dt;
     });

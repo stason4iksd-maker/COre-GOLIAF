@@ -2,7 +2,6 @@
 #include "renderer/GLUtils.h"
 #include "core/Logger.h"
 #include <GL/glew.h>
-#include <glm/gtc/type_ptr.hpp>
 #include <fstream>
 #include <sstream>
 
@@ -48,12 +47,6 @@ bool Shader::LoadFromFiles(const std::string& vertexPath, const std::string& fra
 }
 
 void Shader::Use() const { glUseProgram(program_); }
-
-void Shader::SetMat4(const char* name, const glm::mat4& value) const {
-    const int loc = glGetUniformLocation(program_, name);
-    glUniformMatrix4fv(loc, 1, GL_FALSE, glm::value_ptr(value));
-}
-
 unsigned int Shader::Id() const { return program_; }
 Shader::~Shader() { if (program_ != 0) glDeleteProgram(program_); }
 
