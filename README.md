@@ -1,56 +1,61 @@
 # COre-GOLIAF
 
-Next-stage modular C++17 engine scaffold with three runnable targets:
-- `Dev` (editor/dev tools)
-- `Player` (runtime)
-- `LanServer` (LAN server)
+Минимальный рабочий каркас 3D-движка на C++17/CMake с тремя целями:
 
-## Project Structure
+- **Dev** — development tools (уровневый редактор, asset pipeline, debug tools) как расширяемые stubs
+- **Player** — standalone runtime
+- **LanServer** — простой LAN server stub
+
+## Рабочая структура
 
 ```text
 COre-GOLIAF/
-├─ engine/
-│  ├─ core/
-│  ├─ renderer/
-│  ├─ ecs/
-│  ├─ physics/
-│  ├─ audio/
-│  └─ scene/
 ├─ src/
-│  ├─ dev/
-│  ├─ player/
-│  └─ server/
+│  ├ dev_main.cpp
+│  ├ player_main.cpp
+│  └ server_main.cpp
 ├─ assets/
-│  ├─ models/
-│  ├─ textures/
-│  └─ sounds/
+├─ engine/
+│  ├ renderer/
+│  ├ physics/
+│  └ audio/
 └─ CMakeLists.txt
 ```
 
-## Build
+## Сборка (Ninja)
 
 ```bash
 cmake -S . -B build -G Ninja
 cmake --build build
 ```
 
-Targets:
+## Сборка (Visual Studio / MSVC)
+
+Для Visual Studio 2026 используйте соответствующий установленный генератор CMake. Если доступен только Visual Studio 2022, можно использовать его генератор.
 
 ```bash
-cmake --build build --target Dev
-cmake --build build --target Player
-cmake --build build --target LanServer
+cmake -S . -B build -G "Visual Studio 17 2022"
+cmake --build build --config Debug
 ```
 
-Binaries are generated in `build/bin/`.
+## Ninja + MSVC на Windows
 
-## Current capabilities (stub stage)
+Если хотите именно Ninja + MSVC, запускайте команды из **x64 Native Tools Command Prompt for VS** (или после `vcvars64.bat`). Тогда CMake автоматически подхватит MSVC.
 
-- Engine core: `Application`, `Window`, `Logger`, `Timer`
-- Renderer modules: `Renderer`, `Shader`, `Mesh`, `Camera`, `Texture`
-- ECS skeleton: `Entity`, `Component`, `System`, `EcsWorld`
-- Scene skeleton: `Scene`, `SceneLoader`, `SceneSerializer`
-- Dev editor modules: editor shell, level/menu editors, debug tools, asset pipeline
-- LAN server modules: `NetworkServer`, `ClientConnection`, `Packet`
+## Бинарники
 
-All subsystems print clear initialization logs for visibility.
+После сборки все exe находятся в:
+
+- `build/bin/Dev.exe`
+- `build/bin/Player.exe`
+- `build/bin/LanServer.exe`
+
+## Проверка запуска
+
+Каждый exe сразу печатает сообщение в консоль:
+
+- Dev: `Dev build started`
+- Player: `Player build started`
+- LanServer: `LAN server started`
+
+и ждёт Enter, чтобы окно не закрывалось мгновенно.

@@ -1,0 +1,60 @@
+engine_license_policy:
+  accepted_engine_licenses:
+    - MIT
+    - BSD-2-Clause
+    - BSD-3-Clause
+  compatibility_rules:
+    MIT:
+      allow:
+        - MIT
+        - BSD-2-Clause
+        - BSD-3-Clause
+        - Zlib
+        - ISC
+        - Apache-2.0
+        - LGPL-2.1-only
+        - LGPL-2.1-or-later
+        - LGPL-3.0-only
+        - LGPL-3.0-or-later
+    BSD-2-Clause:
+      allow:
+        - MIT
+        - BSD-2-Clause
+        - BSD-3-Clause
+        - Zlib
+        - ISC
+        - Apache-2.0
+        - LGPL-2.1-only
+        - LGPL-2.1-or-later
+        - LGPL-3.0-only
+        - LGPL-3.0-or-later
+    BSD-3-Clause:
+      allow:
+        - MIT
+        - BSD-2-Clause
+        - BSD-3-Clause
+        - Zlib
+        - ISC
+        - Apache-2.0
+        - LGPL-2.1-only
+        - LGPL-2.1-or-later
+        - LGPL-3.0-only
+        - LGPL-3.0-or-later
+
+components:
+  - dependency: SDL2
+    license: Zlib
+    linking: dynamic-preferred
+    notices: "Include SDL copyright and license text in distribution docs."
+  - dependency: OpenAL Soft
+    license: LGPL-2.1-or-later
+    linking: dynamic-required
+    notices: "Ship LGPL notice, provide copy of LGPL, and allow replacing the library."
+  - dependency: stb
+    license: MIT
+    linking: static-allowed
+    notices: "Preserve MIT copyright and permission notice in source/binaries docs."
+  - dependency: libogg
+    license: BSD-3-Clause
+    linking: static-or-dynamic
+    notices: "Retain BSD-3-Clause notice in docs and source redistribution."

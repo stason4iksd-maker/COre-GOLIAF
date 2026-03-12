@@ -1,53 +1,38 @@
-#include "core/Application.h"
-#include "core/Logger.h"
-#include "dev/AssetPipeline.h"
-#include "dev/debug/DebugTools.h"
-#include "dev/editor/Editor.h"
-#include "dev/level_editor/LevelEditor.h"
-#include "dev/menu_editor/MenuEditor.h"
-#include "ecs/EcsWorld.h"
-#include "ecs/System.h"
-#include "scene/SceneLoader.h"
-#include "scene/SceneSerializer.h"
+#include "core/AssetCompiler.hpp"
+#include "core/AudioSystem.hpp"
+#include "core/EcsWorld.hpp"
+#include "core/Engine.hpp"
+#include "core/LevelEditor.hpp"
+#include "core/MenuEditor.hpp"
+#include "core/PhysicsSystem.hpp"
+#include "core/Renderer.hpp"
 
 int main() {
-    core_goliaf::core::Logger::info("Dev", "Dev build started");
+    Engine engine;
+    Renderer renderer;
+    PhysicsSystem physics;
+    AudioSystem audio;
+    EcsWorld ecs;
+    LevelEditor levelEditor;
+    MenuEditor menuEditor;
+    AssetCompiler assetCompiler;
 
-    core_goliaf::core::Application app;
-    app.initialize("COre-GOLIAF Dev", 1280, 720);
+    engine.initialize();
+    renderer.initialize();
+    physics.initialize();
+    audio.initialize();
+    ecs.initialize();
 
-    core_goliaf::dev::Editor editor;
-    core_goliaf::dev::LevelEditor levelEditor;
-    core_goliaf::dev::MenuEditor menuEditor;
-    core_goliaf::dev::AssetPipeline pipeline;
-    core_goliaf::dev::DebugTools debugTools;
+    levelEditor.open();
+    menuEditor.open();
+    assetCompiler.run();
 
-    editor.initialize();
-    levelEditor.initialize();
-    menuEditor.initialize();
-    pipeline.initialize();
+    engine.update(1.0 / 60.0);
+    physics.step(1.0 / 60.0);
+    ecs.tick(1.0 / 60.0);
+    audio.update();
+    renderer.renderFrame("DevViewport");
 
-    core_goliaf::ecs::EcsWorld world;
-    auto& player = world.createEntity();
-    player.addComponent<core_goliaf::ecs::Transform>();
-    player.addComponent<core_goliaf::ecs::MeshRenderer>();
-    player.addComponent<core_goliaf::ecs::RigidBody>();
-
-    core_goliaf::ecs::InputSystem inputSystem;
-    core_goliaf::ecs::PhysicsSystem physicsSystem;
-    core_goliaf::ecs::RenderSystem renderSystem;
-    inputSystem.update();
-    physicsSystem.update();
-    renderSystem.update();
-
-    core_goliaf::scene::SceneLoader loader;
-    core_goliaf::scene::SceneSerializer serializer;
-    auto scene = loader.load("assets/level1.scene");
-    serializer.save(scene, "assets/level1.scene");
-
-    app.run(2);
-    debugTools.printFrameStats(60.0, 128.0);
-    app.shutdown();
-
+    engine.shutdown();
     return 0;
 }

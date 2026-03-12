@@ -1,19 +1,28 @@
-#include "core/Application.h"
-#include "core/Logger.h"
-#include "scene/SceneLoader.h"
+#include "core/AudioSystem.hpp"
+#include "core/EcsWorld.hpp"
+#include "core/Engine.hpp"
+#include "core/PhysicsSystem.hpp"
+#include "core/Renderer.hpp"
 
 int main() {
-    core_goliaf::core::Logger::info("Player", "Player build started");
-    core_goliaf::core::Logger::info("Player", "Runtime initialized (stub).");
+    Engine engine;
+    Renderer renderer;
+    PhysicsSystem physics;
+    AudioSystem audio;
+    EcsWorld ecs;
 
-    core_goliaf::core::Application app;
-    app.initialize("COre-GOLIAF Player", 1280, 720);
+    engine.initialize();
+    renderer.initialize();
+    physics.initialize();
+    audio.initialize();
+    ecs.initialize();
 
-    core_goliaf::scene::SceneLoader loader;
-    (void)loader.load("assets/level1.scene");
+    engine.update(1.0 / 60.0);
+    physics.step(1.0 / 60.0);
+    ecs.tick(1.0 / 60.0);
+    audio.update();
+    renderer.renderFrame("PlayerViewport");
 
-    app.run(2);
-    app.shutdown();
-
+    engine.shutdown();
     return 0;
 }

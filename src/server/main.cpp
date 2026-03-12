@@ -1,8 +1,16 @@
-#include "server/NetworkServer.h"
+#include "core/Engine.hpp"
+
+#include <iostream>
 
 int main() {
-    core_goliaf::server::NetworkServer server;
-    server.start("127.0.0.1", 12345);
-    server.tick();
+    Engine engine;
+    engine.initialize();
+
+    std::cout << "[LanServer] Listening on UDP port 7777 (stub)" << std::endl;
+    std::cout << "[LanServer] Broadcasting discovery packet (stub)" << std::endl;
+
+    engine.update(0.05);
+    engine.shutdown();
+
     return 0;
 }
