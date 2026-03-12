@@ -1,0 +1,5 @@
+Scene: level1.scene
+Entity: Player
+Component: Transform
+Component: Mesh
+Component: Collider

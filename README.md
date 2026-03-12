@@ -1,54 +1,61 @@
 # COre-GOLIAF
 
-COre-GOLIAF is a modular C++17 starter 3D engine with:
-- OpenGL rendering (triangle)
-- GLFW windowing
-- Dear ImGui editor UI (Dev)
-- ECS + Scene JSON serialization
-- Lua scripting with hot-reload
-- TCP LAN server + test client packet from Player
+Минимальный рабочий каркас 3D-движка на C++17/CMake с тремя целями:
 
-## Build
+- **Dev** — development tools (уровневый редактор, asset pipeline, debug tools) как расширяемые stubs
+- **Player** — standalone runtime
+- **LanServer** — простой LAN server stub
+
+## Рабочая структура
+
+```text
+COre-GOLIAF/
+├─ src/
+│  ├ dev_main.cpp
+│  ├ player_main.cpp
+│  └ server_main.cpp
+├─ assets/
+├─ engine/
+│  ├ renderer/
+│  ├ physics/
+│  └ audio/
+└─ CMakeLists.txt
+```
+
+## Сборка (Ninja)
 
 ```bash
 cmake -S . -B build -G Ninja
 cmake --build build
 ```
 
-Binaries:
-- `build/bin/Dev`
-- `build/bin/Player`
-- `build/bin/LanServer`
+## Сборка (Visual Studio / MSVC)
 
-## Run
+Для Visual Studio 2026 используйте соответствующий установленный генератор CMake. Если доступен только Visual Studio 2022, можно использовать его генератор.
 
-1. Run server first:
 ```bash
-./build/bin/LanServer
-```
-2. Run player:
-```bash
-./build/bin/Player
-```
-3. Run dev editor:
-```bash
-./build/bin/Dev
+cmake -S . -B build -G "Visual Studio 17 2022"
+cmake --build build --config Debug
 ```
 
-## Structure
+## Ninja + MSVC на Windows
 
-- `src/core` - app loop, window, logger, timer
-- `src/renderer` - OpenGL renderer, shader, mesh
-- `src/ecs` - entity/component/registry systems
-- `src/scene` - scene container + JSON load/save
-- `src/scripting` - Lua VM and script updates
-- `src/network` - TCP server
-- `src/editor` - ImGui integration and panels
-- `src/apps` - app entry points
-- `assets` - shaders/scenes/scripts
+Если хотите именно Ninja + MSVC, запускайте команды из **x64 Native Tools Command Prompt for VS** (или после `vcvars64.bat`). Тогда CMake автоматически подхватит MSVC.
 
-## Notes
+## Бинарники
 
-- Dev shows ImGui menu + Hierarchy/Inspector/Asset Browser.
-- Player loads scene and applies Lua script update to transforms.
-- LanServer listens on `127.0.0.1:12345` and echoes JSON payloads.
+После сборки все exe находятся в:
+
+- `build/bin/Dev.exe`
+- `build/bin/Player.exe`
+- `build/bin/LanServer.exe`
+
+## Проверка запуска
+
+Каждый exe сразу печатает сообщение в консоль:
+
+- Dev: `Dev build started`
+- Player: `Player build started`
+- LanServer: `LAN server started`
+
+и ждёт Enter, чтобы окно не закрывалось мгновенно.
