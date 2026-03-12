@@ -1,27 +1,38 @@
-#include <iostream>
-
-#include "audio/AudioStub.h"
-#include "physics/PhysicsStub.h"
-#include "renderer/RendererStub.h"
+#include "core/AssetCompiler.hpp"
+#include "core/AudioSystem.hpp"
+#include "core/EcsWorld.hpp"
+#include "core/Engine.hpp"
+#include "core/LevelEditor.hpp"
+#include "core/MenuEditor.hpp"
+#include "core/PhysicsSystem.hpp"
+#include "core/Renderer.hpp"
 
 int main() {
-    std::cout << "Dev build started" << std::endl;
-    std::cout << "[Dev] Level editor initialized (stub)." << std::endl;
-    std::cout << "[Dev] Menu editor initialized (stub)." << std::endl;
+    Engine engine;
+    Renderer renderer;
+    PhysicsSystem physics;
+    AudioSystem audio;
+    EcsWorld ecs;
+    LevelEditor levelEditor;
+    MenuEditor menuEditor;
+    AssetCompiler assetCompiler;
 
-    RendererStub renderer;
-    PhysicsStub physics;
-    AudioStub audio;
-
+    engine.initialize();
     renderer.initialize();
     physics.initialize();
     audio.initialize();
+    ecs.initialize();
 
-    renderer.renderFrame("DevViewport");
-    physics.update(1.0 / 60.0);
+    levelEditor.open();
+    menuEditor.open();
+    assetCompiler.run();
+
+    engine.update(1.0 / 60.0);
+    physics.step(1.0 / 60.0);
+    ecs.tick(1.0 / 60.0);
     audio.update();
+    renderer.renderFrame("DevViewport");
 
-    std::cout << "[Dev] Asset pipeline ready (stub)." << std::endl;
-    std::cout << "[Dev] Debug tools ready (stub)." << std::endl;
+    engine.shutdown();
     return 0;
 }

@@ -1,32 +1,24 @@
 # COre-GOLIAF
 
-Стартовый каркас 3D-движка на C++17 + CMake с тремя сборочными целями:
-- `Dev` — dev-среда (редактор уровней/меню, asset pipeline, debug tools) в виде stubs
-- `Player` — standalone runtime stub
-- `LanServer` — LAN server stub
+Минимальный рабочий каркас 3D-движка на C++17/CMake с тремя целями:
 
-## Структура проекта
+- **Dev** — development tools (уровневый редактор, asset pipeline, debug tools) как расширяемые stubs
+- **Player** — standalone runtime
+- **LanServer** — простой LAN server stub
+
+## Рабочая структура
 
 ```text
 COre-GOLIAF/
 ├─ src/
-│  ├─ dev/
-│  │   └─ main.cpp
-│  ├─ player/
-│  │   └─ main.cpp
-│  ├─ server/
-│  │   └─ main.cpp
-│  └─ engine/
-│      ├─ renderer/
-│      │   ├─ RendererStub.h
-│      │   └─ RendererStub.cpp
-│      ├─ physics/
-│      │   ├─ PhysicsStub.h
-│      │   └─ PhysicsStub.cpp
-│      └─ audio/
-│          ├─ AudioStub.h
-│          └─ AudioStub.cpp
+│  ├ dev_main.cpp
+│  ├ player_main.cpp
+│  └ server_main.cpp
 ├─ assets/
+├─ engine/
+│  ├ renderer/
+│  ├ physics/
+│  └ audio/
 └─ CMakeLists.txt
 ```
 
@@ -37,32 +29,33 @@ cmake -S . -B build -G Ninja
 cmake --build build
 ```
 
-## Сборка таргетов по отдельности
+## Сборка (Visual Studio / MSVC)
 
-```bash
-cmake --build build --target Dev
-cmake --build build --target Player
-cmake --build build --target LanServer
-```
-
-## Visual Studio / MSVC
+Для Visual Studio 2026 используйте соответствующий установленный генератор CMake. Если доступен только Visual Studio 2022, можно использовать его генератор.
 
 ```bash
 cmake -S . -B build -G "Visual Studio 17 2022"
 cmake --build build --config Debug
 ```
 
-> Для Ninja + MSVC на Windows запускайте из *x64 Native Tools Command Prompt for VS* (или после `vcvars64.bat`).
+## Ninja + MSVC на Windows
 
-## Выходные файлы
+Если хотите именно Ninja + MSVC, запускайте команды из **x64 Native Tools Command Prompt for VS** (или после `vcvars64.bat`). Тогда CMake автоматически подхватит MSVC.
 
-Все exe складываются в `build/bin/`:
-- `Dev(.exe)`
-- `Player(.exe)`
-- `LanServer(.exe)`
+## Бинарники
+
+После сборки все exe находятся в:
+
+- `build/bin/Dev.exe`
+- `build/bin/Player.exe`
+- `build/bin/LanServer.exe`
 
 ## Проверка запуска
 
-- `Dev` печатает `Dev build started`
-- `Player` печатает `Player build started`
-- `LanServer` печатает `LAN server started`
+Каждый exe сразу печатает сообщение в консоль:
+
+- Dev: `Dev build started`
+- Player: `Player build started`
+- LanServer: `LAN server started`
+
+и ждёт Enter, чтобы окно не закрывалось мгновенно.

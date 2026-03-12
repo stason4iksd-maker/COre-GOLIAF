@@ -1,7 +1,16 @@
+#include "core/Engine.hpp"
+
 #include <iostream>
 
 int main() {
-    std::cout << "LAN server started" << std::endl;
-    std::cout << "[LanServer] Listening on localhost:7777 (stub)." << std::endl;
+    Engine engine;
+    engine.initialize();
+
+    std::cout << "[LanServer] Listening on UDP port 7777 (stub)" << std::endl;
+    std::cout << "[LanServer] Broadcasting discovery packet (stub)" << std::endl;
+
+    engine.update(0.05);
+    engine.shutdown();
+
     return 0;
 }

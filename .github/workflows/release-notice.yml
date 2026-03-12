@@ -1,0 +1,24 @@
+name: Release NOTICE Guard
+
+on:
+  workflow_dispatch:
+  release:
+    types: [published]
+
+jobs:
+  refresh-notice:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install tooling
+        run: pip install pyyaml
+      - name: Validate licenses before release
+        run: python3 scripts/validate_licenses.py
+      - name: Regenerate NOTICE from registry
+        run: python3 scripts/update_notice.py
+      - name: Ensure NOTICE is committed
+        run: |
+          git diff --exit-code NOTICE || (echo "NOTICE is outdated. Run scripts/update_notice.py and commit results." && exit 1)

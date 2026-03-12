@@ -1,24 +1,28 @@
-#include <iostream>
-
-#include "audio/AudioStub.h"
-#include "physics/PhysicsStub.h"
-#include "renderer/RendererStub.h"
+#include "core/AudioSystem.hpp"
+#include "core/EcsWorld.hpp"
+#include "core/Engine.hpp"
+#include "core/PhysicsSystem.hpp"
+#include "core/Renderer.hpp"
 
 int main() {
-    std::cout << "Player build started" << std::endl;
-    std::cout << "[Player] Runtime initialized (stub)." << std::endl;
+    Engine engine;
+    Renderer renderer;
+    PhysicsSystem physics;
+    AudioSystem audio;
+    EcsWorld ecs;
 
-    RendererStub renderer;
-    PhysicsStub physics;
-    AudioStub audio;
-
+    engine.initialize();
     renderer.initialize();
-    renderer.renderFrame("PlayerViewport");
     physics.initialize();
-    physics.update(1.0 / 60.0);
     audio.initialize();
-    audio.update();
+    ecs.initialize();
 
-    std::cout << "[Player] Modules loaded successfully." << std::endl;
+    engine.update(1.0 / 60.0);
+    physics.step(1.0 / 60.0);
+    ecs.tick(1.0 / 60.0);
+    audio.update();
+    renderer.renderFrame("PlayerViewport");
+
+    engine.shutdown();
     return 0;
 }
