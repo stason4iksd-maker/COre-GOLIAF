@@ -27,14 +27,6 @@ if(WIN32 AND CMAKE_GENERATOR MATCHES "Ninja" AND NOT MSVC)
         "or call vcvars64.bat before configuring.")
 endif()
 
-add_library(engine_modules STATIC
-    engine/renderer/RendererStub.cpp
-    engine/physics/PhysicsStub.cpp
-    engine/audio/AudioStub.cpp
-)
-
-target_include_directories(engine_modules PUBLIC engine)
-
 add_library(game_engine_lib STATIC
     src/ResourceManager.cpp
     src/Scene.cpp
@@ -47,6 +39,12 @@ add_library(game_engine_lib STATIC
 
 target_include_directories(game_engine_lib PUBLIC src)
 
+add_library(core_runtime STATIC
+    src/engine/Engine.cpp
+)
+target_include_directories(core_runtime PUBLIC include src)
+target_link_libraries(core_runtime PUBLIC game_engine_lib)
+
 add_executable(game_engine src/main.cpp)
 target_link_libraries(game_engine PRIVATE game_engine_lib)
 
@@ -54,9 +52,9 @@ add_executable(Dev src/dev_main.cpp)
 add_executable(Player src/player_main.cpp)
 add_executable(LanServer src/server_main.cpp)
 
-target_link_libraries(Dev PRIVATE engine_modules)
-target_link_libraries(Player PRIVATE engine_modules)
-target_link_libraries(LanServer PRIVATE engine_modules)
+target_link_libraries(Dev PRIVATE core_runtime)
+target_link_libraries(Player PRIVATE core_runtime)
+target_link_libraries(LanServer PRIVATE core_runtime)
 
 foreach(target Dev Player LanServer game_engine)
     set_target_properties(${target} PROPERTIES
