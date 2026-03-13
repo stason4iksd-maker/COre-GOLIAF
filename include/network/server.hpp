@@ -1,5 +1,6 @@
 #pragma once
 #include <atomic>
+#include <mutex>
 #include <string>
 #include <thread>
 #include <vector>
@@ -22,11 +23,14 @@ public:
 private:
     void tcpLoop();
     void udpLoop();
+    void discoveryLoop();
 
     ServerConfig cfg_;
     std::atomic<bool> running_{false};
     std::thread tcpThread_;
     std::thread udpThread_;
+    std::thread discoveryThread_;
+    std::mutex clientsMutex_;
     std::vector<unsigned long long> clients_;
 };
 

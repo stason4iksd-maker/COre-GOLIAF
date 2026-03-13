@@ -1,14 +1,26 @@
 #include "assets/pipeline.hpp"
+#include "audio/audio_engine.hpp"
+#include "ecs/ecs_world.hpp"
 #include "editor/level_editor.hpp"
 #include "editor/menu_editor.hpp"
+#include "physics/physics_world.hpp"
 #include "render/opengl_renderer.hpp"
-#include <imgui.h>
 #include <backends/imgui_impl_glfw.h>
 #include <backends/imgui_impl_opengl3.h>
+#include <imgui.h>
+#include <iostream>
 
 int main() {
+    std::cout << "Dev build started\n";
     render::OpenGLRenderer renderer;
     if (!renderer.init("Dev Editor")) return 1;
+
+    audio::AudioEngine audio;
+    audio.init();
+
+    ecs::World world;
+    auto devCube = world.create();
+    physics::PhysicsWorld physics;
 
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
@@ -22,8 +34,11 @@ int main() {
     pipeline.compileAndCache("build/cache");
 
     while (!renderer.shouldClose()) {
-        renderer.beginFrame();
+        constexpr float dt = 1.0f / 60.0f;
+        physics.step(world, dt);
+        audio.update(dt);
 
+        renderer.beginFrame();
         ImGui_ImplOpenGL3_NewFrame();
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
@@ -32,7 +47,10 @@ int main() {
         level.draw();
 
         ImGui::Begin("Viewport");
+        auto& tr = world.transform(devCube);
         ImGui::Text("3D viewport with cube + gizmos");
+        ImGui::Text("Cube position: (%.2f, %.2f, %.2f)", tr.x, tr.y, tr.z);
+        ImGui::Text("Debug: physics+audio running");
         ImGui::End();
 
         ImGui::Render();
@@ -46,6 +64,7 @@ int main() {
     ImGui_ImplOpenGL3_Shutdown();
     ImGui_ImplGlfw_Shutdown();
     ImGui::DestroyContext();
+    audio.shutdown();
     renderer.shutdown();
     return 0;
 }
