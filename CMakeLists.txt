@@ -1,82 +1,54 @@
-cmake_minimum_required(VERSION 3.21)
-project(COre_GOLIAF LANGUAGES C CXX)
+cmake_minimum_required(VERSION 3.20)
 
-set(CMAKE_CXX_STANDARD 20)
+project(COreGOLIAF VERSION 0.2.0 LANGUAGES CXX)
+
+# --- Compiler setup ---
+set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
+set(CMAKE_CXX_EXTENSIONS OFF)
 
-include(FetchContent)
-
-# GLFW
-FetchContent_Declare(
-  glfw
-  GIT_REPOSITORY https://github.com/glfw/glfw.git
-  GIT_TAG 3.4
-)
-set(GLFW_BUILD_DOCS OFF CACHE BOOL "" FORCE)
-set(GLFW_BUILD_TESTS OFF CACHE BOOL "" FORCE)
-set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
-set(GLFW_BUILD_WAYLAND OFF CACHE BOOL "" FORCE)
-set(GLFW_BUILD_X11 OFF CACHE BOOL "" FORCE)
-FetchContent_MakeAvailable(glfw)
-
-# GLAD
-FetchContent_Declare(
-  glad
-  GIT_REPOSITORY https://github.com/Dav1dde/glad.git
-  GIT_TAG v0.1.36
-)
-FetchContent_MakeAvailable(glad)
-
-# ImGui
-FetchContent_Declare(
-  imgui
-  GIT_REPOSITORY https://github.com/ocornut/imgui.git
-  GIT_TAG v1.90.8
-)
-FetchContent_MakeAvailable(imgui)
-
-add_library(imgui_lib
-  ${imgui_SOURCE_DIR}/imgui.cpp
-  ${imgui_SOURCE_DIR}/imgui_draw.cpp
-  ${imgui_SOURCE_DIR}/imgui_tables.cpp
-  ${imgui_SOURCE_DIR}/imgui_widgets.cpp
-  ${imgui_SOURCE_DIR}/backends/imgui_impl_glfw.cpp
-  ${imgui_SOURCE_DIR}/backends/imgui_impl_opengl3.cpp
-)
-target_include_directories(imgui_lib PUBLIC ${imgui_SOURCE_DIR} ${imgui_SOURCE_DIR}/backends)
-target_compile_definitions(imgui_lib PUBLIC GLFW_INCLUDE_NONE IMGUI_IMPL_OPENGL_LOADER_GLAD)
-target_link_libraries(imgui_lib PUBLIC glfw glad)
-
-# Lua
-FetchContent_Declare(
-  lua
-  GIT_REPOSITORY https://github.com/lua/lua.git
-  GIT_TAG v5.4.6
-)
-FetchContent_MakeAvailable(lua)
-
-file(GLOB_RECURSE CORE_SOURCES CONFIGURE_DEPENDS src/core/*.cpp src/render/*.cpp src/editor/*.cpp src/ecs/*.cpp src/scripting/*.cpp src/network/*.cpp src/assets/*.cpp)
-
-add_library(engine_core ${CORE_SOURCES})
-target_include_directories(engine_core PUBLIC include ${lua_SOURCE_DIR})
-file(GLOB LUA_SRC ${lua_SOURCE_DIR}/*.c)
-list(REMOVE_ITEM LUA_SRC ${lua_SOURCE_DIR}/lua.c ${lua_SOURCE_DIR}/luac.c ${lua_SOURCE_DIR}/onelua.c ${lua_SOURCE_DIR}/all.c)
-add_library(lua_lib ${LUA_SRC})
-target_include_directories(lua_lib PUBLIC ${lua_SOURCE_DIR})
-
-target_link_libraries(engine_core PUBLIC glfw glad imgui_lib lua_lib)
-if(UNIX AND NOT APPLE)
-  target_link_libraries(engine_core PUBLIC dl pthread)
+if(MSVC)
+    add_compile_options(/W4 /permissive-)
+else()
+    add_compile_options(-Wall -Wextra -Wpedantic)
 endif()
 
-add_executable(Dev.exe src/app/dev_main.cpp)
-target_link_libraries(Dev.exe PRIVATE engine_core)
+message(STATUS "Generator: ${CMAKE_GENERATOR}")
+message(STATUS "C++ compiler: ${CMAKE_CXX_COMPILER}")
+message(STATUS "C++ compiler ID: ${CMAKE_CXX_COMPILER_ID}")
 
-add_executable(Player.exe src/app/player_main.cpp)
-target_link_libraries(Player.exe PRIVATE engine_core)
+if(WIN32 AND CMAKE_GENERATOR MATCHES "Ninja" AND NOT MSVC)
+    message(WARNING
+        "Ninja generator is active but MSVC was not detected. "
+        "If you need Ninja+MSVC, run from 'x64 Native Tools Command Prompt for VS' "
+        "or call vcvars64.bat before configuring.")
+endif()
 
-add_executable(LanServer.exe src/app/server_main.cpp)
-target_link_libraries(LanServer.exe PRIVATE engine_core)
+# --- Expandable engine modules ---
+add_library(engine_modules STATIC
+    engine/renderer/RendererStub.cpp
+    engine/physics/PhysicsStub.cpp
+    engine/audio/AudioStub.cpp
+)
 
-file(MAKE_DIRECTORY ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})
+target_include_directories(engine_modules PUBLIC engine)
+
+# --- Targets ---
+add_executable(Dev src/dev_main.cpp)
+add_executable(Player src/player_main.cpp)
+add_executable(LanServer src/server_main.cpp)
+
+target_link_libraries(Dev PRIVATE engine_modules)
+target_link_libraries(Player PRIVATE engine_modules)
+target_link_libraries(LanServer PRIVATE engine_modules)
+
+# Force runtime output to build/bin for single- and multi-config generators.
+foreach(target Dev Player LanServer)
+    set_target_properties(${target} PROPERTIES
+        RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin"
+        RUNTIME_OUTPUT_DIRECTORY_DEBUG "${CMAKE_BINARY_DIR}/bin"
+        RUNTIME_OUTPUT_DIRECTORY_RELEASE "${CMAKE_BINARY_DIR}/bin"
+        RUNTIME_OUTPUT_DIRECTORY_RELWITHDEBINFO "${CMAKE_BINARY_DIR}/bin"
+        RUNTIME_OUTPUT_DIRECTORY_MINSIZEREL "${CMAKE_BINARY_DIR}/bin"
+    )
+endforeach()
