@@ -1,5 +1,6 @@
 #include "ResourceManager.h"
 
+#include <filesystem>
 #include <stdexcept>
 
 namespace goliaf {
@@ -25,6 +26,18 @@ ResourceManager& ResourceManager::instance() {
     return manager;
 }
 
+std::shared_ptr<Resource> ResourceManager::LoadTexture(const std::string& path) {
+    return loadTexture(path);
+}
+
+std::shared_ptr<Resource> ResourceManager::LoadModel(const std::string& path) {
+    return loadModel(path);
+}
+
+std::shared_ptr<Resource> ResourceManager::LoadSound(const std::string& path) {
+    return loadSound(path);
+}
+
 std::shared_ptr<Resource> ResourceManager::loadTexture(const std::string& path) {
     return loadImpl(path, ResourceType::Texture);
 }
@@ -38,15 +51,28 @@ std::shared_ptr<Resource> ResourceManager::loadSound(const std::string& path) {
 }
 
 std::shared_ptr<Resource> ResourceManager::getResource(const std::string& id) const {
-    const auto it = resources_.find(id);
+    const auto normalizedId = normalizeId(id);
+    const std::lock_guard<std::mutex> lock(mutex_);
+    const auto it = resources_.find(normalizedId);
     return it == resources_.end() ? nullptr : it->second;
 }
 
+std::shared_ptr<Resource> ResourceManager::GetResource(const std::string& id) const {
+    return getResource(id);
+}
+
 void ResourceManager::releaseResource(const std::string& id) {
-    resources_.erase(id);
+    const auto normalizedId = normalizeId(id);
+    const std::lock_guard<std::mutex> lock(mutex_);
+    resources_.erase(normalizedId);
+}
+
+void ResourceManager::ReleaseResource(const std::string& id) {
+    releaseResource(id);
 }
 
 void ResourceManager::clear() {
+    const std::lock_guard<std::mutex> lock(mutex_);
     resources_.clear();
 }
 
@@ -55,7 +81,9 @@ std::shared_ptr<Resource> ResourceManager::loadImpl(const std::string& path, Res
         throw std::invalid_argument("resource path must not be empty");
     }
 
-    const auto found = resources_.find(path);
+    const auto id = normalizeId(path);
+    const std::lock_guard<std::mutex> lock(mutex_);
+    const auto found = resources_.find(id);
     if (found != resources_.end()) {
         return found->second;
     }
@@ -63,21 +91,26 @@ std::shared_ptr<Resource> ResourceManager::loadImpl(const std::string& path, Res
     std::shared_ptr<Resource> created;
     switch (type) {
         case ResourceType::Texture:
-            created = std::make_shared<TextureResource>(path, path);
+            created = std::make_shared<TextureResource>(id, path);
             break;
         case ResourceType::Model:
-            created = std::make_shared<ModelResource>(path, path);
+            created = std::make_shared<ModelResource>(id, path);
             break;
         case ResourceType::Sound:
-            created = std::make_shared<SoundResource>(path, path);
+            created = std::make_shared<SoundResource>(id, path);
             break;
         default:
-            created = std::make_shared<Resource>(path, path, ResourceType::Unknown);
+            created = std::make_shared<Resource>(id, path, ResourceType::Unknown);
             break;
     }
 
-    resources_[path] = created;
+    resources_[id] = created;
     return created;
+}
+
+std::string ResourceManager::normalizeId(const std::string& path) {
+    const std::filesystem::path fsPath(path);
+    return fsPath.lexically_normal().generic_string();
 }
 
 } // namespace goliaf

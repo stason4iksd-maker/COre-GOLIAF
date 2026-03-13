@@ -1,5 +1,9 @@
 cmake_minimum_required(VERSION 3.20)
 
+if(POLICY CMP0135)
+    cmake_policy(SET CMP0135 NEW)
+endif()
+
 project(COreGOLIAF VERSION 0.2.0 LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 17)
@@ -68,6 +72,7 @@ enable_testing()
 include(FetchContent)
 FetchContent_Declare(
   googletest
+  DOWNLOAD_EXTRACT_TIMESTAMP TRUE
   URL https://github.com/google/googletest/archive/refs/tags/v1.14.0.zip
 )
 set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
@@ -77,6 +82,7 @@ add_executable(runTests
     tests/test_ResourceManager.cpp
     tests/test_Physics.cpp
     tests/test_Renderer.cpp
+    tests/test_Scene.cpp
 )
 target_include_directories(runTests PRIVATE src)
 target_link_libraries(runTests PRIVATE game_engine_lib GTest::gtest_main)

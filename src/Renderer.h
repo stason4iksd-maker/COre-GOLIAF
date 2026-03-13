@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cstdint>
+#include <unordered_set>
 #include <string>
 #include <vector>
 
@@ -24,15 +25,17 @@ public:
     void beginFrame();
     void endFrame();
 
-    bool loadShaderProgram(const std::string& vertexPath, const std::string& fragmentPath, std::string programName);
+    bool loadShaderProgram(const std::string& vertexPath, const std::string& fragmentPath, const std::string& programName);
     void drawMesh(const Mesh& mesh, const Material& material);
 
     [[nodiscard]] bool isInitialized() const noexcept;
     [[nodiscard]] int drawCalls() const noexcept;
+    [[nodiscard]] bool hasShaderProgram(const std::string& programName) const;
 
 private:
     bool initialized_{false};
     int drawCalls_{0};
+    std::unordered_set<std::string> shaderPrograms_;
 };
 
 } // namespace goliaf
