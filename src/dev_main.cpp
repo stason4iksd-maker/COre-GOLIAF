@@ -1,14 +1,21 @@
+#include "core/Engine.hpp"
+
 #include <iostream>
 
-#include "audio/AudioStub.hpp"
-#include "physics/PhysicsStub.hpp"
-#include "renderer/RendererStub.hpp"
-
 int main() {
-    std::cout << "Dev build started" << std::endl;
-    std::cout << "[Dev] Tools: Level editor, menu editor, asset pipeline, debugging tools (stubs)." << std::endl;
-    std::cout << "[Dev] Modules: " << renderer_name() << " | " << physics_name() << " | " << audio_name() << std::endl;
-    std::cout << "Press Enter to exit..." << std::endl;
-    std::cin.get();
+    Engine engine;
+    if (!engine.initialize()) {
+        std::cerr << "[Dev] Engine initialization failed" << std::endl;
+        return 1;
+    }
+
+    int maxFrames = 120;
+    while (engine.isRunning() && maxFrames-- > 0) {
+        engine.update(1.0 / 60.0);
+        engine.render();
+    }
+
+    engine.shutdown();
+    std::cout << "[Dev] Completed run" << std::endl;
     return 0;
 }

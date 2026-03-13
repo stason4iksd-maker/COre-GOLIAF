@@ -1,14 +1,21 @@
+#include "core/Engine.hpp"
+
 #include <iostream>
 
-#include "audio/AudioStub.hpp"
-#include "physics/PhysicsStub.hpp"
-#include "renderer/RendererStub.hpp"
-
 int main() {
-    std::cout << "Player build started" << std::endl;
-    std::cout << "[Player] Runtime initialized (stub)." << std::endl;
-    std::cout << "[Player] Modules: " << renderer_name() << " | " << physics_name() << " | " << audio_name() << std::endl;
-    std::cout << "Press Enter to exit..." << std::endl;
-    std::cin.get();
+    Engine engine;
+    if (!engine.initialize()) {
+        std::cerr << "[Player] Engine initialization failed" << std::endl;
+        return 1;
+    }
+
+    int maxFrames = 300;
+    while (engine.isRunning() && maxFrames-- > 0) {
+        engine.update(1.0 / 60.0);
+        engine.render();
+    }
+
+    engine.shutdown();
+    std::cout << "[Player] Exit" << std::endl;
     return 0;
 }

@@ -1,8 +1,11 @@
 cmake_minimum_required(VERSION 3.20)
 
+if(POLICY CMP0135)
+    cmake_policy(SET CMP0135 NEW)
+endif()
+
 project(COreGOLIAF VERSION 0.2.0 LANGUAGES CXX)
 
-# --- Compiler setup ---
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
@@ -24,26 +27,36 @@ if(WIN32 AND CMAKE_GENERATOR MATCHES "Ninja" AND NOT MSVC)
         "or call vcvars64.bat before configuring.")
 endif()
 
-# --- Expandable engine modules ---
-add_library(engine_modules STATIC
-    engine/renderer/RendererStub.cpp
-    engine/physics/PhysicsStub.cpp
-    engine/audio/AudioStub.cpp
+add_library(game_engine_lib STATIC
+    src/ResourceManager.cpp
+    src/Scene.cpp
+    src/Renderer.cpp
+    src/PhysicsSystem.cpp
+    src/InputManager.cpp
+    src/AudioManager.cpp
+    src/SceneManager.cpp
 )
 
-target_include_directories(engine_modules PUBLIC engine)
+target_include_directories(game_engine_lib PUBLIC src)
 
-# --- Targets ---
+add_library(core_runtime STATIC
+    src/engine/Engine.cpp
+)
+target_include_directories(core_runtime PUBLIC include src)
+target_link_libraries(core_runtime PUBLIC game_engine_lib)
+
+add_executable(game_engine src/main.cpp)
+target_link_libraries(game_engine PRIVATE game_engine_lib)
+
 add_executable(Dev src/dev_main.cpp)
 add_executable(Player src/player_main.cpp)
 add_executable(LanServer src/server_main.cpp)
 
-target_link_libraries(Dev PRIVATE engine_modules)
-target_link_libraries(Player PRIVATE engine_modules)
-target_link_libraries(LanServer PRIVATE engine_modules)
+target_link_libraries(Dev PRIVATE core_runtime)
+target_link_libraries(Player PRIVATE core_runtime)
+target_link_libraries(LanServer PRIVATE core_runtime)
 
-# Force runtime output to build/bin for single- and multi-config generators.
-foreach(target Dev Player LanServer)
+foreach(target Dev Player LanServer game_engine)
     set_target_properties(${target} PROPERTIES
         RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin"
         RUNTIME_OUTPUT_DIRECTORY_DEBUG "${CMAKE_BINARY_DIR}/bin"
@@ -52,3 +65,25 @@ foreach(target Dev Player LanServer)
         RUNTIME_OUTPUT_DIRECTORY_MINSIZEREL "${CMAKE_BINARY_DIR}/bin"
     )
 endforeach()
+
+enable_testing()
+include(FetchContent)
+FetchContent_Declare(
+  googletest
+  DOWNLOAD_EXTRACT_TIMESTAMP TRUE
+  URL https://github.com/google/googletest/archive/refs/tags/v1.14.0.zip
+)
+set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
+FetchContent_MakeAvailable(googletest)
+
+add_executable(runTests
+    tests/test_ResourceManager.cpp
+    tests/test_Physics.cpp
+    tests/test_Renderer.cpp
+    tests/test_Scene.cpp
+)
+target_include_directories(runTests PRIVATE src)
+target_link_libraries(runTests PRIVATE game_engine_lib GTest::gtest_main)
+
+include(GoogleTest)
+gtest_discover_tests(runTests)
