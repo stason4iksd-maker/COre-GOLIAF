@@ -1,14 +1,114 @@
-# Architecture Rules
+# Архитектура рендер-подсистемы
 
-- **Layering**: `app -> core -> subsystems(render/editor/ecs/network/assets/scripting/physics/audio)` without reverse dependencies.
-- **Data ownership**: ECS owns runtime game state; renderer and networking consume immutable snapshots.
-- **Module boundaries**: each subsystem has `include/<module>` public API and `src/<module>` implementation.
-- **Determinism**: simulation and replication paths must be seed-driven and replayable.
-- **Build targets**:
-  - `Dev.exe`: editor-only tooling + viewport + gizmos.
-  - `Player.exe`: runtime ECS + Lua hot reload + scene/component loading.
-  - `LanServer.exe`: headless networking + replication.
-- **Scalability**: every new feature enters via a subsystem interface and adds tests at module boundary.
-- **No stubs in production path**: placeholder modules like `RendererStub`, `PhysicsStub`, `AudioStub` are forbidden.
+## Цели
+- Ввести стабильный слой абстракции `RHI` (Render Hardware Interface), поверх которого строится рендер-граф и высокоуровневые подсистемы.
+- Минимизировать утечки backend-специфики в игровой/движковой код.
+- Обеспечить переносимость между backend-ами без потери функционального минимума.
 
-- **Runtime modules are concrete**: renderer/physics/audio must remain functional implementations, not placeholders.
+## RHI (минимальные интерфейсы)
+
+Ниже — минимальный набор интерфейсов, обязательный для любого backend-а:
+
+1. **Device**
+   - Создание и уничтожение GPU-ресурсов.
+   - Создание очередей/контекстов исполнения.
+   - Запрос caps/feature flags.
+
+2. **Buffer**
+   - Vertex/Index/Uniform/Storage буферы.
+   - Загрузка данных (staging/host-visible).
+   - Барьеры состояния (read/write usage).
+
+3. **Texture**
+   - 2D/3D/Cubemap ресурсы.
+   - Render target / depth-stencil / sampled usage.
+   - Генерация/загрузка mip-уровней.
+
+4. **Pipeline**
+   - Graphics pipeline (shader stages, raster, depth/stencil, blend).
+   - Базовый compute pipeline (опционально для v1, но интерфейс предусмотрен).
+   - Привязка layout-ов ресурсов (descriptor/bind group model).
+
+5. **Command List**
+   - Запись draw/dispatch команд.
+   - Установка pipeline и bind-ресурсов.
+   - Барьеры/синхронизация на уровне списка команд.
+   - Submit в очередь исполнения.
+
+6. **Swapchain**
+   - Получение backbuffer-изображения.
+   - Present кадра.
+   - Обработка resize/recreate.
+
+## Референсный backend
+
+**Первым и референсным backend-ом фиксируется Vulkan.**
+
+Причины:
+- Явная модель синхронизации и ресурсов, хорошо отображающаяся в универсальный RHI.
+- Кроссплатформенность (Windows/Linux) для ранних стадий.
+- Достаточная строгость API для выявления архитектурных проблем на раннем этапе.
+
+Правило разработки:
+- Любое изменение RHI сначала реализуется и валидируется на Vulkan.
+- Остальные backend-ы подтягиваются только после стабилизации контракта RHI.
+
+## API-специфичные фичи и деградация
+
+### Категории фич
+1. **Core (обязательные)**
+   - Поддерживаются всеми backend-ами без деградации.
+   - Примеры: базовые буферы/текстуры, graphics pipeline, render pass, swapchain.
+
+2. **Extended (желательные)**
+   - Имеют fallback на более простой путь.
+   - Примеры: bindless-ресурсы, async compute, частично resident textures.
+
+3. **Optional (платформенные/экспериментальные)**
+   - Могут быть отключены без нарушения базовой работоспособности.
+   - Примеры: ray tracing, mesh shaders, VRS.
+
+### Правила деградации
+- При отсутствии фичи backend обязан:
+  1) явно сообщить через capability-флаги;
+  2) выбрать документированный fallback;
+  3) сохранить визуальную корректность, даже если цена — ниже производительность/качество.
+
+Примеры деградации:
+- **Bindless отсутствует** → использовать табличную/слотовую схему дескрипторов с батчингом.
+- **Async compute отсутствует** → выполнять compute в основной graphics-очереди.
+- **Отсутствует аппаратный shadow compare формат** → использовать software compare в shader.
+- **Нет поддержки продвинутого формата текстур** → fallback на совместимый формат с возможной потерей качества.
+
+## Критерий готовности backend-а (test render scenario)
+
+Каждый backend считается минимально готовым только после успешного прохождения единого сценария:
+
+### Сценарий: `triangle + textured mesh + shadow pass`
+1. **Triangle pass**
+   - Рендер цветного треугольника.
+   - Проверка базового pipeline и swapchain.
+
+2. **Textured mesh pass**
+   - Рендер индексированной меш-сетки с текстурой и матрицами трансформации.
+   - Проверка буферов, текстур, дескрипторов и состояния depth.
+
+3. **Shadow pass**
+   - Отдельный проход в depth-таргет из источника света.
+   - Использование карты теней в основном проходе.
+   - Проверка multi-pass синхронизации и переходов ресурсов.
+
+### Условия прохождения
+- Без критических validation/runtime ошибок.
+- Визуально корректный результат на референсной тест-сцене.
+- Стабильная работа при resize окна.
+- Повторяемость результата в CI/локальном прогоне.
+
+## Порядок внедрения backend-ов
+
+1. Стабилизация `RHI` контракта на Vulkan.
+2. Закрытие критериев готовности по сценарию `triangle + textured mesh + shadow pass`.
+3. Заморозка API v1 RHI.
+4. **Только после этого** добавление адаптеров DX12 и Metal.
+
+Это правило нужно для предотвращения раннего расхождения архитектур и роста технического долга.

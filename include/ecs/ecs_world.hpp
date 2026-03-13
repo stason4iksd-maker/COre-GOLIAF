@@ -12,7 +12,6 @@ class World {
 public:
     Entity create();
     Transform& transform(Entity e);
-    std::unordered_map<Entity, Transform>& transforms();
     const std::unordered_map<Entity, Transform>& transforms() const;
 private:
     Entity next_{1};
