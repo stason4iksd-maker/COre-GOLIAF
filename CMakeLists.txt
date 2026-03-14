@@ -45,6 +45,16 @@ add_library(core_runtime STATIC
 target_include_directories(core_runtime PUBLIC include src)
 target_link_libraries(core_runtime PUBLIC game_engine_lib)
 
+add_library(dev_tools STATIC
+    src/dev/AssetPipeline.cpp
+    src/dev/debug/DebugTools.cpp
+    src/dev/level_editor/LevelEditor.cpp
+    src/dev/menu_editor/MenuEditor.cpp
+    src/dev/editor/Editor.cpp
+)
+target_include_directories(dev_tools PUBLIC src)
+target_link_libraries(dev_tools PUBLIC game_engine_lib)
+
 add_executable(game_engine src/main.cpp)
 target_link_libraries(game_engine PRIVATE game_engine_lib)
 
@@ -52,7 +62,7 @@ add_executable(Dev src/dev_main.cpp)
 add_executable(Player src/player_main.cpp)
 add_executable(LanServer src/server_main.cpp)
 
-target_link_libraries(Dev PRIVATE core_runtime)
+target_link_libraries(Dev PRIVATE core_runtime dev_tools)
 target_link_libraries(Player PRIVATE core_runtime)
 target_link_libraries(LanServer PRIVATE core_runtime)
 
@@ -81,9 +91,10 @@ add_executable(runTests
     tests/test_Physics.cpp
     tests/test_Renderer.cpp
     tests/test_Scene.cpp
+    tests/test_DevEditor.cpp
 )
 target_include_directories(runTests PRIVATE src)
-target_link_libraries(runTests PRIVATE game_engine_lib GTest::gtest_main)
+target_link_libraries(runTests PRIVATE game_engine_lib dev_tools GTest::gtest_main)
 
 include(GoogleTest)
 gtest_discover_tests(runTests)
