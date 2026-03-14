@@ -1,9 +1,20 @@
+#include "core/Engine.hpp"
+
 #include <iostream>
 
 int main() {
-    std::cout << "LAN server started" << std::endl;
-    std::cout << "[LanServer] Local discovery service placeholder is running." << std::endl;
-    std::cout << "Press Enter to exit..." << std::endl;
-    std::cin.get();
+    Engine engine;
+    if (!engine.initialize()) {
+        std::cerr << "[LanServer] Engine initialization failed" << std::endl;
+        return 1;
+    }
+
+    int ticks = 200;
+    while (engine.isRunning() && ticks-- > 0) {
+        engine.update(0.05);
+    }
+
+    engine.shutdown();
+    std::cout << "[LanServer] Stopped" << std::endl;
     return 0;
 }

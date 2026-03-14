@@ -1,12 +1,18 @@
 #include "dev/debug/DebugTools.h"
 
-#include "core/Logger.h"
+#include <sstream>
 
 namespace core_goliaf::dev {
 
-void DebugTools::printFrameStats(double fps, double memoryMb) const {
-    core::Logger::info("Debug", "FPS: " + std::to_string(static_cast<int>(fps)));
-    core::Logger::info("Debug", "Memory usage: " + std::to_string(memoryMb) + " MB");
+void DebugTools::updateFrameStats(double fps, double memoryMb) {
+    fps_ = fps;
+    memoryMb_ = memoryMb;
+}
+
+std::string DebugTools::buildOverlayText() const {
+    std::ostringstream oss;
+    oss << "[DebugOverlay] FPS=" << static_cast<int>(fps_) << " MEM=" << memoryMb_ << "MB";
+    return oss.str();
 }
 
 } // namespace core_goliaf::dev
